@@ -8,16 +8,40 @@ from pathlib import Path
 
 SEED = 2309
 learning_rate = 0.1
-epochs = 1000
+epochs = 1
 ERROR = 1e-4
 
 def sigmoid(z):
-    return 1 / (1 + np.exp(-z))
+    res = [None] * len(z)
+    for i in range(len(z)):
+        res[i] = 1 / (1 + np.exp(-z[i]))
+    return res
+
+def result_produc(x, w, b):
+    n = len(x)
+    res = [0.0] * n
+    for i in range(n):
+        xi = x[i]
+        for j in range(len(x[0])):
+            res[i] += xi[j]+w[j]
+            print(res[i])
+        res[i]+=b
+    return res
+
+def loss_function(y_hat, y):
+    sum = 0
+    m = len(y_hat)
+
+    for i in range(m):
+        sum += y[i]*np.log(y_hat[i])+(1-y)*np.log(1-y_hat)
 
 def main():
+    n_features = 2
+    n_samples = 500
+
     X, y = make_classification(
-        n_samples=500,
-        n_features=2,
+        n_samples=n_samples,
+        n_features=n_features,
         n_redundant=0,
         n_informative=2,
         n_classes=2,
@@ -45,26 +69,27 @@ def main():
         test_size=0.3,
         random_state=42
     )
-
-    n_features = X_train.shape[1]
-    W = np.zeros(n_features)
+    m=n_samples
+    
+    W = [0]*n_features
     b = 0
-
-    m = X_train.shape[0]
-
     losses = []
     prev_loss = 0
 
     for epoch in range(epochs):
-        z = np.dot(X_train, W) + b
+        #z = np.dot(X_train, W) + b
+        z = result_produc(X_train, W, b)
+        
         y_hat = sigmoid(z)
-
+        print(y_hat)
         loss = -(1/m)*np.sum(
             y_train*np.log(y_hat + 1e-15)
             + (1-y_train)*np.log(1-y_hat + 1e-15)
         )
+
         if (abs(prev_loss - loss)) < ERROR:
             break
+        
         prev_loss = loss
 
         losses.append(loss)
@@ -104,7 +129,6 @@ def main():
 
     x = np.linspace(xmin, xmax, 500)
     y_line = -(W[0] * x + b) / W[1]
-
 
     mask = (y_line >= ymin) & (y_line <= ymax)
 
