@@ -11,16 +11,19 @@ learning_rate = 0.1
 epochs = 1000
 ERROR = 1e-4
 
+n = 2 # número de pesos
+m = 500 # número de amostras
+
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
 def main():
     X, y = make_classification(
-        n_samples=500,
-        n_features=2,
+        n_samples=m,
+        n_features=n,
         n_redundant=0,
-        n_informative=2,
-        n_classes=2,
+        n_informative=n,
+        n_classes=n,
         random_state=SEED
     )
 
@@ -46,11 +49,8 @@ def main():
         random_state=42
     )
 
-    n_features = X_train.shape[1]
-    W = np.zeros(n_features)
+    W = np.zeros(n)
     b = 0
-
-    m = X_train.shape[0]
 
     losses = []
     prev_loss = 0
