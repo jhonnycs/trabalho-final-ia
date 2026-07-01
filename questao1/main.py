@@ -108,8 +108,8 @@ for epoca in range(epocas):
 
     historico_loss.append(mse_epoca)
 
-    if epoca % 50 == 0:
-        print("Época:", epoca, "MSE:", mse_epoca)
+    # if epoca % 50 == 0:
+    #     print("Época:", epoca, "MSE:", mse_epoca)
 
 
 print()
