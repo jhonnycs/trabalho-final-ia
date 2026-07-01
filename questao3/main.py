@@ -39,7 +39,7 @@ def main():
         X,
         y,
         test_size=0.3,
-        random_state=42,
+        random_state=SEED,
         stratify=y
     )
 
@@ -47,7 +47,7 @@ def main():
         X_temp,
         y_temp,
         test_size=0.5,
-        random_state=42,
+        random_state=SEED,
         stratify=y_temp
     )
 
