@@ -6,7 +6,7 @@ from pathlib import Path
 from MLP import MLP
 import numpy as np
 import copy
-import random
+
 n_samples = 500
 SEED = 2309
 NOISE = 0.3
@@ -14,6 +14,7 @@ EPOCHS = 200
 ERROR = 1e-4
 
 def main():
+    img = 1
     X, y = make_moons(
         n_samples=n_samples,
         noise=NOISE,
@@ -32,8 +33,9 @@ def main():
     plt.xlabel("x1")
     plt.ylabel("x2")
     plt.plot()
-    plt.savefig(save_dir/"01-data.png")
+    plt.savefig(save_dir/f"0{img}-data.png")
     plt.close()
+    img += 1
 
     X_train, X_temp, y_train, y_temp = train_test_split(
         X,
@@ -114,8 +116,9 @@ def main():
         plt.xlabel("Época")
         plt.ylabel("Loss")
 
-        plt.savefig(save_dir/f"02-loss_{perceptrons}.png")
+        plt.savefig(save_dir/f"0{img}-loss_{perceptrons}.png")
         plt.close()
+        img += 1
 
     best_model.eval()
 
@@ -137,8 +140,9 @@ def main():
     plt.contourf(xx, yy, Z, levels=20, cmap="bwr", alpha=0.4)
     plt.scatter(X[:,0], X[:,1], c=y, cmap="bwr")
 
-    plt.savefig(save_dir/"03-decision_boundary.png")
-    
+    plt.savefig(save_dir/f"0{img}-decision_boundary.png")
+    img += 1
+
     with torch.no_grad():
         outputs = best_model(X_test)
         predictions = (outputs >= 0.5).float()
