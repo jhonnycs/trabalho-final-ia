@@ -5,11 +5,13 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from MLP import MLP
 import numpy as np
-
+import copy
+import random
 n_samples = 500
 SEED = 2309
 NOISE = 0.3
 EPOCHS = 200
+ERROR = 1e-4
 
 def main():
     X, y = make_moons(
@@ -59,7 +61,6 @@ def main():
 
     perceptrons_quantities = [5, 10, 20, 50]
 
-
     best_model = None
     best_loss = float("inf")
     best_neurons = None
@@ -70,11 +71,11 @@ def main():
         criterion = torch.nn.BCELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
-        
         train_losses = []
         val_losses = []
 
-        for _ in range(EPOCHS):
+        for epoch in range(EPOCHS):
+
             model.train()
 
             outputs = model(X_train)
@@ -94,17 +95,21 @@ def main():
 
             val_losses.append(vall_loss.item())
 
+            if epoch > 2 and abs(val_losses[-2] - val_losses[-1]) < ERROR:
+                print(f"para {perceptrons} neurônios, parou na época {epoch}")
+                break
+
             if val_losses[-1] < best_loss:
                 best_loss = val_losses[-1]
-                best_model = model
+                best_model = copy.deepcopy(model)
                 best_neurons = perceptrons
-        
         
         plt.figure()
 
         plt.plot(train_losses, label="Treino")
         plt.plot(val_losses, label="Validação")
 
+        plt.title(f"Loss de Treino e Validação ({perceptrons} neurônios)")
         plt.legend()
         plt.xlabel("Época")
         plt.ylabel("Loss")
@@ -112,37 +117,35 @@ def main():
         plt.savefig(save_dir/f"02-loss_{perceptrons}.png")
         plt.close()
 
-        best_model.eval()
+    best_model.eval()
 
-        with torch.no_grad():
-            outputs = best_model(X_test)
+    xx, yy = np.meshgrid(
+        np.linspace(X[:,0].min()-1, X[:,0].max()+1, 300),
+        np.linspace(X[:,1].min()-1, X[:,1].max()+1, 300)
+    )
 
-            predictions = (outputs >= 0.5).float()
+    grid = np.c_[xx.ravel(), yy.ravel()]
+    grid = torch.tensor(grid, dtype=torch.float32)
 
-            accuracy = (predictions == y_test).float().mean()
+    with torch.no_grad():
+        Z = best_model(grid)
 
-        print(f"Melhor número de neurônios: {best_neurons}")
-        print(f"Acurácia no teste: {accuracy:.4f}")
+    Z = Z.numpy().reshape(xx.shape)
 
-        xx, yy = np.meshgrid(
-            np.linspace(X[:,0].min()-1, X[:,0].max()+1, 300),
-            np.linspace(X[:,1].min()-1, X[:,1].max()+1, 300)
-        )
+    plt.figure()
 
-        grid = np.c_[xx.ravel(), yy.ravel()]
-        grid = torch.tensor(grid, dtype=torch.float32)
+    plt.contourf(xx, yy, Z, levels=20, cmap="bwr", alpha=0.4)
+    plt.scatter(X[:,0], X[:,1], c=y, cmap="bwr")
 
-        with torch.no_grad():
-            Z = best_model(grid)
+    plt.savefig(save_dir/"03-decision_boundary.png")
+    
+    with torch.no_grad():
+        outputs = best_model(X_test)
+        predictions = (outputs >= 0.5).float()
+        accuracy = (predictions == y_test).float().mean()
 
-        Z = Z.numpy().reshape(xx.shape)
-
-        plt.figure()
-
-        plt.contourf(xx, yy, Z, levels=20, cmap="bwr", alpha=0.4)
-        plt.scatter(X[:,0], X[:,1], c=y, cmap="bwr")
-
-        plt.savefig(save_dir/"03-decision_boundary.png")
+    print(f"Melhor número de neurônios: {best_neurons}")
+    print(f"Acurácia no teste: {accuracy:.4f}")
 
 if __name__ == "__main__":
     main()

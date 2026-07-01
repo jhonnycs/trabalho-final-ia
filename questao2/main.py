@@ -49,6 +49,7 @@ def main():
         random_state=42
     )
 
+    N = len(X_train)
     W = np.zeros(n)
     b = 0
 
@@ -59,11 +60,12 @@ def main():
         z = np.dot(X_train, W) + b
         y_hat = sigmoid(z)
 
-        loss = -(1/m)*np.sum(
-            y_train*np.log(y_hat + 1e-15)
-            + (1-y_train)*np.log(1-y_hat + 1e-15)
+        loss = -(1/N)*np.sum(
+            y_train*np.log(y_hat)
+            + (1-y_train)*np.log(1-y_hat)
         )
         if (abs(prev_loss - loss)) < ERROR:
+            print(f"Época: {epoch}")
             break
         prev_loss = loss
 
@@ -71,10 +73,9 @@ def main():
 
         dz = y_hat - y_train
 
-        dW = (1/m)*np.dot(X_train.T, dz)
-        db = (1/m)*np.sum(dz)
+        dW = (1/N)*np.dot(X_train.T, dz)
+        db = (1/N)*np.sum(dz)
 
-        # Atualização
         W -= learning_rate*dW
         b -= learning_rate*db
 
@@ -115,8 +116,6 @@ def main():
 
     plt.savefig(save_dir/"03-decision-boundary.png")
     plt.close()
-
-
 
 if __name__ == "__main__":
     main()
